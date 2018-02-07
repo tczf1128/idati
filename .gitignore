@@ -1,0 +1,11 @@
+*.log
+*.rdb
+nohup.out
+idati
+
+# Mac crap
+.DS_Store
+
+fe_source/dist
+fe_source/node_modules
+package-lock.json

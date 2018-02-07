@@ -1,0 +1,94 @@
+{
+  "success": {
+    "success": true
+  },
+  "fail": {
+    "success": false,
+    "message": {
+      "global": "globalMessage"
+    }
+  },
+  "playUrlDetail": {
+    "success": true,
+    "result": {
+      "playUrl": "http://cyberplayerplay.kaywang.cn/cyberplayer/demo201711-L1.m3u8",
+      "playDomain": "aaa",
+      "app": "testapp",
+      "stream": "teststream"
+    }
+  },
+  "questionList": {
+    "success": true,
+    "page": {
+      "totalCount": 12,
+      "result": [
+        {
+          "id": "1",
+          "topic": "who are you?",
+          "options": [
+            "me",
+            "you",
+            "him",
+            "she"
+          ],
+          "answer": "you",
+          "status": "FINISHED"
+        },
+        {
+          "id": "2",
+          "topic": "who are you?",
+          "options": [
+            "me",
+            "you",
+            "him",
+            "she"
+          ],
+          "answer": "him",
+          "status": "FINISHED"
+        },
+        {
+          "id": "3",
+          "topic": "who are you?",
+          "options": [
+            "me",
+            "you",
+            "him",
+            "she"
+          ],
+          "answer": "you",
+          "status": "FINISHED"
+        },
+        {
+          "id": "4",
+          "topic": "who are you?",
+          "options": [
+            "me",
+            "you",
+            "him",
+            "she"
+          ],
+          "answer": "she",
+          "status": "FINISHED"
+        }
+      ]
+    }
+  },
+
+  "statusDetail": {
+    "success": true,
+    "result": {
+      "status": 1
+    }
+  },
+  "standardAnswer": {
+    "success": true,
+    "result": {
+      "userAnswerCount": {
+        "me" : 2000000,
+        "you": 1000000,
+        "him": 100000,
+        "she": 10000
+      }
+    }
+  }
+}

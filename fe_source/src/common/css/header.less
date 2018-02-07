@@ -1,0 +1,85 @@
+/**
+ * @file common/css/header.less
+ * @author zhangzhe(zhangzhe@baidu.com)
+ **/
+
+#header {
+    position: fixed;
+    z-index: 2000;
+    width: 100%;
+    left: 0;
+    top: 0;
+    height: 200px;
+    border: none;
+    color: #FFF;
+    background: #112C42;
+    .main-header {
+        background: #072034;
+        height: 60px;
+        border: none;
+        .idati-logo {
+            margin-top: 13px;
+            margin-left: 16px;
+        }
+        h1 {
+            display: inline-block;
+            font-size: 18px;
+            line-height: 28px;
+            margin-top: 15px;
+            margin-left: 20px;
+            vertical-align: top;
+        }
+    }
+    .sub-header {
+        text-align: center;
+        .steps {
+            position: relative;
+            width: 490px;
+            height: 100px;
+            margin-top: 20px;
+            display: inline-block;
+            .step {
+                color: @blue;
+                img {
+                    margin-bottom: 12px;
+                }
+            }
+            .step1 {
+                float: left;
+            }
+            .step2 {
+                margin-left: 154px;
+                float: left;
+            }
+            .step3 {
+                float: right;
+            }
+        }
+        .split {
+            width: 160px;
+            height: 0;
+            border-top: 2px dashed @blue;
+            position: absolute;
+            display: block;
+            top: 30px;
+            &.split1 {
+                left: 66px;
+            }
+            &.split2 {
+                left: 273px;
+            }
+        }
+        .split:before {
+            content: '';
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-left: 13px solid @blue;
+            border-bottom: 6px solid transparent;
+            font-size: 0;
+            margin-top: -7px;
+            display: block;
+            margin-left: 76px;
+        }
+    }
+}
