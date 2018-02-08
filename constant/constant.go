@@ -1,21 +1,26 @@
 package constant
 
-import "time"
+import (
+	"time"
 
-const (
-	ERROR_CODE_OK          = 0
-	ERROR_CODE_BAD_REQUEST = 1
-	ERROR_CODE_UNKNOWN     = 2
+	"github.com/idati/model"
+)
 
-	ERROR_MESSAGE_OK          = "operate ok."
-	ERROR_MESSAGE_BAD_REQUEST = "bad request."
-	ERROR_MESSAGE_UNKNOWN     = "internal server error."
+var (
+	ErrorParams  = model.ErrorMessage{"请求参数错误"}
+	ErrorUnknown = model.ErrorMessage{"服务器错误"}
 
-	ERROR_MESSAGE_UPDATE_QUESTION    = "更新问题失败"
-	ERROR_MESSAGE_CREATE_QUESTION    = "创建问题失败"
-	ERROR_MESSAGE_DELETE_QUESTION    = "删除问题失败"
-	ERROR_MESSAGE_QUERY_QUESTION     = "查询问题失败"
-	ERROR_MESSAGE_QUESTION_NOT_EXIST = "问题不存在"
+	ErrorQuestionNotExist = model.ErrorMessage{"问题不存在"}
+	ErrorQuestionSend     = model.ErrorMessage{"发送问题失败"}
+	ErrorQuestionCreate   = model.ErrorMessage{"创建问题失败"}
+	ErrorQuestionUpdate   = model.ErrorMessage{"更新问题失败"}
+	ErrorQuestionDelete   = model.ErrorMessage{"删除问题失败"}
+	ErrorQuestionList     = model.ErrorMessage{"查询问题列表失败"}
+	ErrorQuestionDetail   = model.ErrorMessage{"查询问题详情失败"}
+
+	ErrorLiveInfoNotExist = model.ErrorMessage{"流地址不存在"}
+
+	ErrorGetPlayCount = model.ErrorMessage{"获取播放人数失败"}
 )
 
 const (

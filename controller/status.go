@@ -30,8 +30,9 @@ func (ctrl *StatusController) Get(c *gin.Context) {
 		if liveStreamInfo.PlayDomain != json.PlayDomain || liveStreamInfo.App != json.App || liveStreamInfo.Stream != json.Stream {
 			logrus.Error("no such domain/app/stream")
 			resp.Success = false
-			resp.Message = constant.ERROR_MESSAGE_UNKNOWN
-			c.JSON(http.StatusBadRequest, resp)
+			resp.Message = constant.ErrorLiveInfoNotExist
+			c.JSON(http.StatusOK, resp)
+			return
 		}
 
 		if liveStreamInfo.Status == 1 {
@@ -48,8 +49,9 @@ func (ctrl *StatusController) Get(c *gin.Context) {
 			if err != nil {
 				logrus.Errorf("get stream playcount error, err=%v\n", err)
 				resp.Success = false
-				resp.Message = constant.ERROR_MESSAGE_UNKNOWN
-				c.JSON(http.StatusBadRequest, resp)
+				resp.Message = constant.ErrorGetPlayCount
+				c.JSON(http.StatusOK, resp)
+				return
 			}
 		}
 
@@ -59,8 +61,8 @@ func (ctrl *StatusController) Get(c *gin.Context) {
 	} else {
 		logrus.Errorf("get status error: %v\n", err)
 		resp.Success = false
-		resp.Message = constant.ERROR_MESSAGE_BAD_REQUEST
-		c.JSON(http.StatusBadRequest, resp)
+		resp.Message = constant.ErrorParams
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
@@ -78,8 +80,8 @@ func (ctrl *StatusController) Set(c *gin.Context) {
 	} else {
 		logrus.Errorf("set status error: %v\n", err)
 		resp.Success = false
-		resp.Message = constant.ERROR_MESSAGE_BAD_REQUEST
-		c.JSON(http.StatusBadRequest, resp)
+		resp.Message = constant.ErrorParams
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
@@ -98,8 +100,8 @@ func (ctrl *StatusController) UpdatePlayUrl(c *gin.Context) {
 	} else {
 		logrus.Errorf("update play url error: %v\n", err)
 		resp.Success = false
-		resp.Message = constant.ERROR_MESSAGE_BAD_REQUEST
-		c.JSON(http.StatusBadRequest, resp)
+		resp.Message = constant.ErrorParams
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
@@ -111,8 +113,9 @@ func (ctrl *StatusController) GetPlayUrl(c *gin.Context) {
 	if err != nil {
 		logrus.Errorf("load liveStreamInfo error, err=%v\n", err)
 		resp.Success = false
-		resp.Message = constant.ERROR_MESSAGE_BAD_REQUEST
-		c.JSON(http.StatusBadRequest, resp)
+		resp.Message = constant.ErrorLiveInfoNotExist
+		c.JSON(http.StatusOK, resp)
+		return
 	}
 	resp.Success = true
 	resp.Result = liveStreamInfo

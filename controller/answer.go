@@ -24,8 +24,8 @@ func (ctrl *AnswerController) SendByUser(c *gin.Context) {
 	} else {
 		logrus.Errorf("send answer by user error: %v\n", err)
 		resp.Success = false
-		resp.Message = constant.ERROR_MESSAGE_BAD_REQUEST
-		c.JSON(http.StatusBadRequest, resp)
+		resp.Message = constant.ErrorParams
+		c.JSON(http.StatusOK, resp)
 	}
 }
 
@@ -65,13 +65,13 @@ func (ctrl *AnswerController) SendByAdmin(c *gin.Context) {
 		} else {
 			logrus.Errorf("question not found or error, questionId=%s, err=%v\n", json.Id, err)
 			resp.Success = false
-			resp.Message = constant.ERROR_MESSAGE_QUESTION_NOT_EXIST
-			c.JSON(http.StatusBadRequest, resp)
+			resp.Message = constant.ErrorQuestionNotExist
+			c.JSON(http.StatusOK, resp)
 		}
 	} else {
 		logrus.Errorf("send answer by admin error: %v\n", err)
 		resp.Success = false
-		resp.Message = constant.ERROR_MESSAGE_BAD_REQUEST
-		c.JSON(http.StatusBadRequest, resp)
+		resp.Message = constant.ErrorParams
+		c.JSON(http.StatusOK, resp)
 	}
 }
