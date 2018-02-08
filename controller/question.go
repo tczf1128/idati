@@ -64,14 +64,7 @@ func (ctrl *QuestionController) Create(c *gin.Context) {
 	resp := model.LiveResponse{}
 	if err := c.BindJSON(&json); err == nil {
 		var questionList model.QuestionList
-		err = storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
-		if err != nil {
-			logrus.Errorf("get question list error when create question, err=%v", err)
-			resp.Success = false
-			resp.Message = constant.ErrorUnknown
-			c.JSON(http.StatusOK, resp)
-			return
-		}
+		storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
 		newQuestion := model.Question{
 			Id:      util.GenerateId(),
 			Topic:   json.Topic,
@@ -105,19 +98,20 @@ func (ctrl *QuestionController) Delete(c *gin.Context) {
 	resp := model.LiveResponse{}
 	if err := c.BindJSON(&json); err == nil {
 		var questionList model.QuestionList
-		err = storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
-		if err != nil {
-			logrus.Errorf("get question list error when delete question, err=%v", err)
-			resp.Success = false
-			resp.Message = constant.ErrorUnknown
-			c.JSON(http.StatusOK, resp)
-			return
-		}
+		storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
+		var found bool
 		for i, elem := range questionList.Questions {
 			if elem.Id == json.Id {
+				found = true
 				questionList.Questions = append(questionList.Questions[:i], questionList.Questions[i+1:]...)
 				break
 			}
+		}
+		if !found {
+			resp.Success = false
+			resp.Message = constant.ErrorQuestionNotExist
+			c.JSON(http.StatusOK, resp)
+			return
 		}
 		err = storage.RedisClient.Set(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList, constant.REDIS_DEFAULT_EXPIRATION)
 		if err != nil {
@@ -143,19 +137,21 @@ func (ctrl *QuestionController) Detail(c *gin.Context) {
 	resp := model.LiveResponse{}
 	if err := c.BindJSON(&json); err == nil {
 		var questionList model.QuestionList
-		err = storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
-		if err != nil {
-			logrus.Errorf("get question list error when detail question, err=%v", err)
-			resp.Success = false
-			resp.Message = constant.ErrorUnknown
-			c.JSON(http.StatusOK, resp)
-			return
-		}
+		storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
+		var found bool
 		for _, elem := range questionList.Questions {
 			if elem.Id == json.Id {
+				found = true
 				resp.Result = elem
 				break
 			}
+		}
+
+		if !found {
+			resp.Success = false
+			resp.Message = constant.ErrorQuestionNotExist
+			c.JSON(http.StatusOK, resp)
+			return
 		}
 
 		resp.Success = true
@@ -171,14 +167,7 @@ func (ctrl *QuestionController) Detail(c *gin.Context) {
 func (ctrl *QuestionController) List(c *gin.Context) {
 	var questionList model.QuestionList
 	resp := model.LiveResponse{}
-	err := storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
-	if err != nil {
-		logrus.Errorf("get question list error when list question, err=%v", err)
-		resp.Success = false
-		resp.Message = constant.ErrorUnknown
-		c.JSON(http.StatusOK, resp)
-		return
-	}
+	storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
 
 	listQuestionResponse := model.ListQuestionResponse{
 		TotalCount: len(questionList.Questions),
@@ -198,16 +187,12 @@ func (ctrl *QuestionController) Update(c *gin.Context) {
 	resp := model.LiveResponse{}
 	if err := c.BindJSON(&json); err == nil {
 		var questionList model.QuestionList
-		err = storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
-		if err != nil {
-			logrus.Errorf("get question list error when update question, err=%v", err)
-			resp.Success = false
-			resp.Message = constant.ErrorUnknown
-			c.JSON(http.StatusOK, resp)
-			return
-		}
+		storage.RedisClient.Get(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList)
+
+		var found bool
 		for i, elem := range questionList.Questions {
 			if elem.Id == json.Id {
+				found = true
 				updatedQuestion := model.Question{
 					Id:      elem.Id,
 					Topic:   json.Topic,
@@ -218,6 +203,13 @@ func (ctrl *QuestionController) Update(c *gin.Context) {
 				questionList.Questions[i] = updatedQuestion
 				break
 			}
+		}
+
+		if !found {
+			resp.Success = false
+			resp.Message = constant.ErrorQuestionNotExist
+			c.JSON(http.StatusOK, resp)
+			return
 		}
 
 		err = storage.RedisClient.Set(constant.REDIS_LIVE_QUESTION_LIST_KEY, &questionList, constant.REDIS_DEFAULT_EXPIRATION)
