@@ -1,3 +1,5 @@
+listen:
+    8080
 user:
     accesskeyid: 98df355eb3314ca5a297dc863c9325fb
     secretaccesskey: 944cbc7628cc48fc9fb93540c5f10d2f
@@ -10,5 +12,5 @@ log:
     file: 'idati.log'
 
 live:
-    playurl: rtmp://zhengfengplay1.baidudomainbcd.com/live/stream
+    playurl: rtmp://play.domain.com/live/stream
 

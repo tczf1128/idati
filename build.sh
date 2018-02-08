@@ -1,3 +1,5 @@
 #!/bin/sh
 
-go build -o idati
+set -e
+
+go build -o idati && cd fe_source && sh webbuild.sh

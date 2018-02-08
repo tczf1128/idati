@@ -21,4 +21,6 @@ var Config = struct {
 	Live struct {
 		PlayUrl string
 	}
+
+	Listen string
 }{}

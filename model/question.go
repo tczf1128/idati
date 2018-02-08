@@ -31,5 +31,5 @@ type ListQuestionResponse struct {
 }
 
 type QuestionIdRequest struct {
-	Id string `json:"id"`
+	Id string `json:"id" binding:"required"`
 }
