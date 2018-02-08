@@ -102,7 +102,7 @@ export default san.defineComponent({
         const playUrlInfo = this.data.get('playUrlInfo');
         return service.statusDetail(playUrlInfo).then(res => {
             // 更新考试开启状态
-            this.exam.isStarted = true;
+            this.exam.isStarted = res.status === 1;
             this.refreshExam();
             this.data.set('statusDisabled', false);
         });
