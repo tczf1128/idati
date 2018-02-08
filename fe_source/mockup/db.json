@@ -44,7 +44,7 @@
             "she"
           ],
           "answer": "him",
-          "status": "FINISHED"
+          "status": "UNBEGIN"
         },
         {
           "id": "3",
@@ -56,7 +56,7 @@
             "she"
           ],
           "answer": "you",
-          "status": "FINISHED"
+          "status": "UNBEGIN"
         },
         {
           "id": "4",
@@ -68,7 +68,7 @@
             "she"
           ],
           "answer": "she",
-          "status": "FINISHED"
+          "status": "UNBEGIN"
         }
       ]
     }

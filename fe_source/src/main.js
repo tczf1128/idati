@@ -26,7 +26,6 @@ function routerConfig() {
     router.add({rule: '/question/list', Component: QuestionList, target: '#app'});
     router.add({rule: '/question/create', Component: QuestionCreate, target: '#app'});
     router.add({rule: '/exam/index', Component: ExamIndex, target: '#app'});
-
     router.start();
 }
 

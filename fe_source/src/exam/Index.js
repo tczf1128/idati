@@ -12,8 +12,8 @@ import {alert, confirm} from 'san-xui/lib/x/biz/helper';
 import {template} from './index.template.js';
 import service from '../service';
 import {QUESTION_FLAGS} from '../common/constants';
-import {getQuestionTotalStatus, getQuestionCurrentStatus, canSendQuestion, getQuestionTextShow} from '../common/common';
 import cyberplayer from '../common/cyberplayer/cyberplayer';
+import Exam from './object/Exam';
 
 export default san.defineComponent({
     template,
@@ -24,26 +24,27 @@ export default san.defineComponent({
     },
     initData() {
         return {
-            playUrlInfo: null,
-            statusDisabled: true,
-            isStarted: false, // 答题是否开始
-            sendAnswerDisabled: true, // 发送答案按钮是否禁用
-            currentQuestion: null, // 当前正在答的题目
-            sendQuestionLoading: false // 正在发送题目标记
+            exam: null,
+            statusDisabled: true, // 开启按钮不可点
+            sendAnswerDisabled: true, // 发送答案按钮是否禁用,
+            sendQuestionLoading: false, // 正在发送题目标记,
+            sendAnswerLoading: false // 正在发送答案标记
         }
     },
     computed: {
         questionDetail() {
-            const question = this.data.get('currentQuestion') || this.data.get('lastQuestion');
-            const userAnswerCount = this.data.get('userAnswerCount');
+            const question = this.data.get('exam.currentQuestion') || this.data.get('exam.lastQuestion');
+            const userAnswerCount = this.data.get('exam.userAnswerCount');
             let questionDetail = '';
             if (question) {
                 questionDetail += `题目${question.index}：${question.topic}<br />`;
                 _.each(question.options, (option, index) => {
                     questionDetail += QUESTION_FLAGS[index] + '. ' + option;
-                    if (userAnswerCount && userAnswerCount[option]) {
+                    // 用户答题人数显示
+                    if (userAnswerCount && userAnswerCount[question.id] && userAnswerCount[question.id][option]) {
                         const klass = option === question.answer ? 'correct' : '';
-                        questionDetail += `<span class="answer-count ${klass}">（${userAnswerCount[option]}人）</span>`;
+                        questionDetail +=
+                            `<span class="answer-count ${klass}">（${userAnswerCount[question.id][option]}人）</span>`;
                     }
                     if (option === question.answer) {
                         questionDetail += '<span class="right-tip">（正确答案）</span>';
@@ -52,26 +53,16 @@ export default san.defineComponent({
                         questionDetail += '<br />';
                     }
                 });
-                return questionDetail;
             }
-            return '';
+            return questionDetail;
         },
         sendAnswerDisabled() {
-            return this.data.get('currentQuestion') == null
-                || this.data.get('sendQuestionLoading')
-                || this.data.get('sendAnswerLoading');
-        },
-        currentQuestion() {
-            // 正在答的题目, 代表现在正在答题
-            let currentQuestion = null;
-            _.each(this.data.get('questions'), question => {
-                if (question.currentStatus === 'DOING') {
-                    currentQuestion = question;
-                    return;
-                }
-            });
-            return currentQuestion;
+            return !this.data.get('exam.currentQuestion')
+                || this.data.get('sendQuestionLoading') || this.data.get('sendAnswerLoading');
         }
+    },
+    inited() {
+        this.exam = new Exam();
     },
     attached() {
         // 先获取考试状态，再去拿所有题目
@@ -108,50 +99,46 @@ export default san.defineComponent({
         });
     },
     getExamStatus() {
-        const payload = this.data.get('playUrlInfo');
-        return service.statusDetail(payload).then(res => {
-            this.data.set('isStarted', res.status === 1);
+        const playUrlInfo = this.data.get('playUrlInfo');
+        return service.statusDetail(playUrlInfo).then(res => {
+            // 更新考试开启状态
+            this.exam.isStarted = true;
+            this.refreshExam();
             this.data.set('statusDisabled', false);
         });
     },
+    refreshExam() {
+        this.data.set('exam', this.exam.getData());
+    },
     getAllQuestions() {
-        const isStarted = this.data.get('isStarted');
         return service.questionList().then(page => {
             const questions = page.result;
-            _.each(questions, (question, index) => {
-                question.index = index + 1;
-                // 题目当下的状态：重要的状态！！
-                question.currentStatus = getQuestionCurrentStatus(question, questions, isStarted);
-                // 是否可以点击发送题目
-                question.disabled = question.currentStatus !== 'NORMAL';
-                question.textShow = getQuestionTextShow(question);
-            });
-            // 题目
-            this.data.set('questions', questions);
-            // 获得整套题目的状态
-            this.data.set('questionTotalStatus', getQuestionTotalStatus(questions));
+            if (!questions || questions.length === 0) {
+                router.locator.redirect('/question/list');
+            }
+            else {
+                this.exam.questions = questions;
+            }
+            this.refreshExam();
         });
     },
     onStatusChange(evt) {
-        // 答题状态修改
-        if (!evt.value === this.data.get('isStarted')) {
+        if (evt.value !== this.exam.isStarted) {
             const status = evt.value ? 1 : 0;
-            // 题目的整体状态
-            const questionTotalStatus = this.data.get('questionTotalStatus');
-            let payload = _.extend({}, this.data.get('playUrlInfo'), {status});
+            const payload = _.extend({}, this.data.get('playUrlInfo'), {status});
             // 如果答题还在进行中，就结束，需要给出提示
-            if (status === 0 && questionTotalStatus === 'PROCESSING') {
+            if (status === 0 && this.exam.status === 'PROCESSING') {
                 confirm({
                     title: '注意',
                     message: '答题正在进行中，关闭后将用户将无法继续答题。确认关闭吗？',
                     width: 400
                 }).then(() => this.updateExamStatus(payload))
-                .catch(() => this.data.set('isStarted', true));
+                .catch(() => this.data.set('exam.isStarted', true));
             }
-            else if (status === 1 && questionTotalStatus !== 'UNBEGIN') {
+            else if (status === 1 && this.exam.status !== 'UNBEGIN') {
                 // 如果题目状态还没初始化成功，则不能开始答题，给出提示
                 alert({message: '题目未初始化成功，请先去修改题目状态'})
-                    .then(() => this.data.set('isStarted', false));
+                    .then(() => this.data.set('exam.isStarted', false));
             }
             else {
                 this.updateExamStatus(payload);
@@ -173,11 +160,11 @@ export default san.defineComponent({
     },
     onQuestionClick(question) {
         // 再进行状态验证
-        if (!this.data.get('isStarted') || question.status !== 'UNBEGIN') {
+        if (!this.exam.isStarted || question.status !== 'UNBEGIN') {
             return;
         }
-        if (!canSendQuestion(question, this.data.get('questions'))) {
-            // 如果不是正常发送题目情况，需要给提示，比如之前还有题没打完
+        if (!this.exam.canSendQuestion(question)) {
+            // 如果之前还有题没打完，则需要给提示
             confirm({
                 title: '注意',
                 message: `之前有题目未答完，是否发送题目${question.index}？`,
@@ -193,20 +180,16 @@ export default san.defineComponent({
         this.data.set('sendQuestionLoading', true);
         service.questionSend({id: question.id})
             .then(() => {
-                this.data.set('sendQuestionLoading', false);
-                // 当前正在答的题目
-                this.data.set('currentQuestion', question);
-                // 上一道题数据清空
-                this.data.set('lastQuestion', null);
-                this.data.set('userAnswerCount', null);
-                // 发送答案按钮激活
-                this.data.set('sendAnswerDisabled', false);
                 // 当前题目状态修改
+                this.exam.currentQuestion = question;
+                this.exam.lastQuestion = null;
                 const actualIndex = question.index - 1;
-                this.data.set(`questions[${actualIndex}].currentStatus`, 'DOING');
-                this.data.set(`questions[${actualIndex}].disabled`, true);
+                this.exam.questions[actualIndex].currentStatus = 'DOING';
+                this.exam.questions[actualIndex].disabled = true; // 不能再点了
+                this.refreshExam();
                 // 获取最新数据
                 this.getAllQuestions();
+                this.data.set('sendQuestionLoading', false);
             }).catch(errors => {
                 this.data.set('sendQuestionLoading', false);
             });
@@ -219,19 +202,24 @@ export default san.defineComponent({
         this.data.set('sendAnswerLoading', true);
         service.questionStandardAnswer({id: question.id})
             .then(res => {
-                this.data.set('sendAnswerLoading', false);
                 // 答题结果
-                this.data.set('userAnswerCount', res.userAnswerCount);
+                this.exam.userAnswerCount[question.id] = res.userAnswerCount;
                 // 删除现在正在答的题
-                this.data.set('currentQuestion', null);
-                this.data.set('lastQuestion', question);
+                this.exam.currentQuestion = null;
+                this.exam.lastQuestion = question;
                 // 修改刚答完这题的状态
                 const actualIndex = question.index - 1;
-                this.data.set(`questions[${actualIndex}].currentStatus`, 'INACTIVE');
+                this.exam.questions[actualIndex].currentStatus = 'INACTIVE';
+                console.log(this.exam.questions[actualIndex]);
+                this.refreshExam();
                 // 获取最新数据
                 this.getAllQuestions();
+                this.data.set('sendAnswerLoading', false);
             }).catch(errors => {
                 this.data.set('sendAnswerLoading', false);
             });
+    },
+    disposed() {
+        this.player && this.player.remove();
     }
 });

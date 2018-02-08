@@ -75,13 +75,19 @@ export default san.defineComponent({
     getQuestionList() {
         return service.questionList().then(page => {
             this.data.set('loading', false);
+
             const questions = page.result;
-            _.each(questions, (question, index) => {
-                question.answerFlag = getAnswerFlag(question.options, question.answer);
-                question.index = index + 1;
-            });
             this.data.set('totalCount', questions.length);
-            this.data.set('questions', questions);
+            if (questions) {
+                _.each(questions, (question, index) => {
+                    question.answerFlag = getAnswerFlag(question.options, question.answer);
+                    question.index = index + 1;
+                });
+                this.data.set('questions', questions);
+            }
+            else {
+                this.data.set('questions', []);
+            }
         });
     },
     onDelete(evt) {
@@ -130,6 +136,10 @@ export default san.defineComponent({
                 answerIndex: _.indexOf(question.options, question.answer)
             };
             this.data.set('updateQuestion', updateQuestion);
+        }
+        else {
+            // 清除上一次数据
+            this.data.set('updateQuestion', undefined);
         }
         // 显示弹框
         this.data.set('dialog', options);
